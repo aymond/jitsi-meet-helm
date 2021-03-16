@@ -2,7 +2,7 @@
 {{- $fullName := include "jitsi-meet.name-web" . -}}
 {{- $svcPort := .Values.web.service.port -}}
 {{- if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 {{- else -}}
 apiVersion: extensions/v1beta1
 {{- end }}
@@ -39,9 +39,12 @@ spec:
         {{- end }}
         {{- range .paths }}
           - path: {{ . | quote }}
+            pathType: Prefix
             backend:
-              serviceName: {{ $fullName }}
-              servicePort: {{ $svcPort }}
+              service:
+                name: {{ $fullName }}
+                port: 
+                  number: {{ $svcPort }}
         {{- end }}
   {{- end }}
 {{- end }}
