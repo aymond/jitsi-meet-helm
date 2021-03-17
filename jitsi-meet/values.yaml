@@ -31,13 +31,21 @@ web:
     type: ClusterIP
     port: 80
   ingress:
+    traefik:
+      entry_point: web
+      enabled: false
+      ingress_class: 'traefik'
+      host: foo.bar.com
+      tls_secret_name: ''
     enabled: false
     annotations: []
     hosts:
       - host: jitsi.meet.local
         oauth: false
         paths: []
-    tls: []
+    tls:
+      domains:
+        - main: 
   resources: {}
   nodeSelector: {}
   tolerations: []

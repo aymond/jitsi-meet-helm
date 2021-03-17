@@ -1,0 +1,94 @@
+webHost: meet.k3s.aymon.dev
+
+common:
+  environment:
+    - name: TZ
+      value: Europe/Amsterdam
+    - name: JVB_BREWERY_MUC
+      value: jvbbrewery 
+    - name: XMPP_DOMAIN
+      value: meet.jitsi
+    - name: XMPP_AUTH_DOMAIN
+      value: auth.meet.jitsi
+    - name: XMPP_INTERNAL_MUC_DOMAIN
+      value: internal-muc.meet.jitsi
+    - name: XMPP_MUC_DOMAIN
+      value: muc.meet.jitsi
+jicofo:
+  userAuth:
+    enabled: true
+    name: "focus"
+    secret: aGl2ZQ==
+  componentSecret: aGl2ZQ==
+  environment:
+    - name: JICOFO_AUTH_DOMAIN
+      value: auth.jitsi.meet
+    
+jvb:
+  userAuth:
+    enabled: true
+    name: "jvb"
+    secret: aGl2ZQ==
+  environment:
+    - name: JVB_STUN_SERVERS
+      value: stun.l.google.com:19302,stun1.l.google.com:19302,stun2.l.google.com:19302
+    - name: JVB_TCP_HARVESTER_DISABLED
+      value: "true"
+    - name: DOCKER_HOST_ADDRESS
+      valueFrom:
+        fieldRef:
+          fieldPath: status.hostIP
+    - name: JVB_OPTS
+      value: "--apis=xmpp,rest"
+    - name: ENABLE_STATISTICS
+      value: "true"
+      
+prosody:
+  auth:
+    enabled: false
+    guest: 0
+    # type: jwt
+  recorder: false
+  replicaCount: 1
+  environment:
+    - name: JVB_TCP_HARVESTER_DISABLED
+      value: "true"
+    - name: ENABLE_GUESTS
+      value: "1"
+
+web:
+  ingressroute:
+    enabled: true
+  ingress:
+    traefik:
+      entry_point: websecure
+      enabled: true
+      ingress_class: 'traefik'
+      host: meet.k3s.aymon.dev
+      tls_secret_name: jitsi-k3s-web
+    enabled: false
+    entrypoints:
+      - websecure
+    annotations:
+      kubernetes.io/ingress.class: traefik
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      cert-manager.io/acme-challenge-type: http01
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure      
+    hosts:
+      - host: meet.k3s.aymon.dev
+        paths:
+          - "/"
+    tls:
+      - hosts:
+          - meet.k3s.aymon.dev
+        secretName: jitsi-k3s-web
+  replicaCount: 1
+  environment:
+    - name: JVB_TCP_HARVESTER_DISABLED
+      value: "true"
+    - name: ENABLE_GUESTS
+      value: "1"
+    - name: PUBLIC_URL
+      value: "https://meet.k3s.aymon.dev"
+    - name: ENABLE_XMPP_WEBSOCKET
+      value: 0
